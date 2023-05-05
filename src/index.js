@@ -4,13 +4,10 @@ import 'simplelightbox/dist/simple-lightbox.min.css';
 
 const form = document.getElementById('search-form');
 const gallery = document.querySelector('.gallery');
-const loadMoreButton = document.querySelector('.load-more');
 const apiKey = '36095282-c36062feac43667220302dbf6';
 let currentPage = 1;
 let searchQuery = '';
 let lightbox;
-
-loadMoreButton.style.display = 'none';
 
 form.addEventListener('submit', async function (e) {
   e.preventDefault();
@@ -32,13 +29,6 @@ form.addEventListener('submit', async function (e) {
 
       currentPage++;
 
-      if (data.totalHits > currentPage * 40) {
-        loadMoreButton.style.display = 'block';
-      } else {
-        loadMoreButton.style.display = 'none';
-        Notiflix.Notify.info("We're sorry, but you've reached the end of search results.");
-      }
-
       // Refresh SimpleLightbox to include new images
       if (lightbox) {
         lightbox.refresh();
@@ -53,14 +43,15 @@ form.addEventListener('submit', async function (e) {
   }
 });
 
-loadMoreButton.addEventListener('click', function () {
-  loadMoreButton.disabled = true;
-  form.dispatchEvent(new Event('submit'));
-  loadMoreButton.disabled = false;
-});
+// Detect when user has scrolled to bottom of page
+window.addEventListener('scroll', function () {
+  const scrollHeight = document.documentElement.scrollHeight;
+  const scrollTop = document.documentElement.scrollTop;
+  const clientHeight = document.documentElement.clientHeight;
 
-form.addEventListener('submit', function () {
-  loadMoreButton.style.display = 'none';
+  if (scrollTop + clientHeight >= scrollHeight - 100) {
+    form.dispatchEvent(new Event('submit'));
+  }
 });
 
 function createPhotoCard(hit) {
