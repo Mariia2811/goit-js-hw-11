@@ -9,6 +9,7 @@ const gallery = document.querySelector('.gallery');
 let currentPage = 1;
 let searchQuery = '';
 let lightbox;
+let isLoading = false;
 
 form.addEventListener('submit', async function (e) {
   e.preventDefault();
@@ -21,6 +22,7 @@ form.addEventListener('submit', async function (e) {
 
   gallery.innerHTML = '';
   currentPage = 1;
+  isLoading = false;
 
   try {
     const hits = await fetchImages(searchQuery, currentPage);
@@ -48,7 +50,9 @@ window.addEventListener('scroll', async function () {
   const clientHeight = document.documentElement.clientHeight;
 
   if (scrollTop + clientHeight >= scrollHeight - 100) {
-    if (searchQuery) {
+    if (searchQuery && !isLoading) {
+      isLoading = true;
+
       try {
         const hits = await fetchImages(searchQuery, currentPage);
         hits.forEach(hit => {
@@ -57,11 +61,17 @@ window.addEventListener('scroll', async function () {
         });
 
         currentPage++;
+        isLoading = false;
+
+        if (lightbox) {
+          lightbox.refresh();
+        } else {
+          lightbox = new SimpleLightbox('.gallery a');
+        }
       } catch (error) {
         console.error('Error:', error);
-        Notiflix.Notify.failure('Failed to load more images.');
+        Notiflix.Notify.failure(`We're sorry, but you've reached the end of search results.`);
       }
     }
   }
 });
-
